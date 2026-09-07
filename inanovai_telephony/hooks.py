@@ -4,6 +4,7 @@ app_publisher = "Akshitha"
 app_description = "Custom Twilio and Frappe CRM/Telephony integration"
 app_email = "akshitha.nr@inanovai.com"
 app_license = "mit"
+required_apps = ["crm", "telephony"]
 
 # Apps
 # ------------------
@@ -252,4 +253,3 @@ app_license = "mit"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-
