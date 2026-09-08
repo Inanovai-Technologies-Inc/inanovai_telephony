@@ -253,3 +253,10 @@ required_apps = ["crm", "telephony"]
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
+app_include_js = [
+    "/assets/inanovai_telephony/js/twilio.min.js",
+]
+
+doctype_js = {
+    "Lead": "public/js/lead_telephony.js",
+}

@@ -7,7 +7,7 @@ from twilio.rest import Client
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def transcription_callback():
-    """Receive a completed Twilio Batch Transcription result."""
+    """Receive a completed Twilio transcription result."""
     payload = frappe.request.get_json(silent=True) or {}
 
     frappe.log_error(
@@ -20,10 +20,6 @@ def transcription_callback():
     transcription_id = payload.get("id")
 
     if str(status).lower() != "completed":
-        frappe.log_error(
-            json.dumps(payload, indent=2),
-            "Twilio Transcription Callback",
-        )
         return {"ok": True}
 
     sentences = payload.get("sentences") or []
@@ -41,9 +37,6 @@ def transcription_callback():
         )
         return {"ok": True}
 
-    # Look up the Twilio Recording to get the original Call SID.
-    # CRM Call Log is created using the Call SID, so this is more
-    # reliable than trying to match using recording_url.
     settings = frappe.get_single("TP Twilio Settings")
 
     twilio_client = Client(
@@ -62,14 +55,8 @@ def transcription_callback():
 
     call_sid = recording.call_sid
 
-    if not call_sid or not frappe.db.exists("CRM Call Log", call_sid):
-        frappe.log_error(
-            f"CRM Call Log not found for CallSid {call_sid}",
-            f"Twilio Transcription - Call Log Not Found ({recording_sid})",
-        )
+    if not call_sid:
         return {"ok": True}
-
-    call_log = frappe.get_doc("CRM Call Log", call_sid)
 
     comment = (
         "<b>Twilio Transcription</b><br>"
@@ -79,19 +66,68 @@ def transcription_callback():
         f"{frappe.utils.escape_html(transcript).replace(chr(10), '<br>')}"
     )
 
-    call_log.add_comment("Comment", comment)
+    # ---------------------------------------------------------
+    # Regular ERPNext Telephony
+    # ---------------------------------------------------------
+    if frappe.db.exists("TP Call Log", call_sid):
+        call_log = frappe.get_doc("TP Call Log", call_sid)
+        call_log.add_comment("Comment", comment)
+
+        try:
+            for link in call_log.get("links") or []:
+                link_doctype = link.get("link_doctype")
+                link_name = link.get("link_name")
+
+                if (
+                    link_doctype
+                    and link_name
+                    and frappe.db.exists(link_doctype, link_name)
+                ):
+                    linked_doc = frappe.get_doc(
+                        link_doctype,
+                        link_name,
+                    )
+                    linked_doc.add_comment(
+                        "Comment",
+                        comment,
+                    )
+
+        except Exception:
+            frappe.log_error(
+                frappe.get_traceback(),
+                f"Failed to add transcription to linked ERPNext document ({call_sid})",
+            )
+
+        frappe.db.commit()
+        return {"ok": True}
+
+    # ---------------------------------------------------------
+    # Existing Frappe CRM
+    # ---------------------------------------------------------
+    if frappe.db.exists("CRM Call Log", call_sid):
+        call_log = frappe.get_doc("CRM Call Log", call_sid)
+        call_log.add_comment("Comment", comment)
+        frappe.db.commit()
+        return {"ok": True}
+
+    frappe.log_error(
+        f"Call Log not found for CallSid {call_sid}",
+        f"Twilio Transcription - Call Log Not Found ({recording_sid})",
+    )
 
     return {"ok": True}
 
 
 @frappe.whitelist()
 def submit_recording_for_transcription(recording_sid):
-    """Submit a Twilio recording to the configured Batch Transcription."""
+    """Submit a Twilio recording to the configured transcription service."""
     settings = frappe.get_single("TP Twilio Settings")
 
     account_sid = settings.account_sid
     auth_token = settings.get_password("auth_token")
-    configuration_id = frappe.conf.get("twilio_transcription_configuration")
+    configuration_id = frappe.conf.get(
+        "twilio_transcription_configuration"
+    )
 
     if not configuration_id:
         frappe.log_error(

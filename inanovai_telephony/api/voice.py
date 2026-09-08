@@ -38,7 +38,13 @@ def voice(**kwargs):
 
     try:
         call_details = TwilioCallDetails(args, call_from=from_number)
-        create_call_log(call_details)
+        create_call_log(
+            call_details,
+            link_doc={
+               "doctype": args.get("link_doctype"),
+               "docname": args.get("link_docname"),
+            },
+        )
     except Exception:
         frappe.db.rollback()
         frappe.log_error(title="Error while creating Twilio call log")
@@ -60,16 +66,20 @@ def voice(**kwargs):
     resp = VoiceResponse()
 
     dial = Dial(
-        caller_id=from_number,
-        record="record-from-answer",
-        recording_configuration_id=recording_configuration_id,
+    caller_id=from_number,
+    record="record-from-answer",
+    recording_configuration_id=recording_configuration_id,
+    recording_status_callback=get_public_url(
+        "/api/method/inanovai_telephony.api.callbacks.update_recording_info"
+    ),
+    recording_status_callback_event="completed",
     )
 
     dial.number(
         args.To,
         status_callback_event="initiated ringing answered completed",
         status_callback=get_public_url(
-            "/api/method/crm.integrations.twilio.api.update_call_status_info"
+           "/api/method/inanovai_telephony.api.callbacks.update_call_status_info"
         ),
         status_callback_method="POST",
     )
