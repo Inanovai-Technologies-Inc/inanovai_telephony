@@ -34,6 +34,7 @@ frappe.ui.form.on("Opportunity", {
                         To: frm.doc.contact_mobile,
                         link_doctype: "Opportunity",
                         link_docname: frm.doc.name,
+                        contact_person: frm.doc.contact_person,
                     },
                 })
 
