@@ -259,4 +259,5 @@ app_include_js = [
 
 doctype_js = {
     "Lead": "public/js/lead_telephony.js",
+    "Purchase Order": "public/js/purchase_order_telephony.js",
 }
