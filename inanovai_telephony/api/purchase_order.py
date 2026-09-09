@@ -32,12 +32,12 @@ def get_supplier_phone(supplier):
         phones = frappe.get_all(
             "Contact Phone",
             filters={"parent": contact},
-            fields=["phone", "is_primary_mobile", "is_primary_phone"],
+            fields=["phone", "is_primary_mobile_no", "is_primary_phone"],
             order_by="idx asc",
         )
 
         for row in phones:
-            if row.is_primary_mobile and row.phone:
+            if row.is_primary_mobile_no and row.phone:
                 return {"phone": row.phone}
 
         for row in phones:
