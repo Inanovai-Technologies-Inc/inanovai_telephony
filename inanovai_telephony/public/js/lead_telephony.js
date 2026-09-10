@@ -1,4 +1,16 @@
 let device = null
+let call_ui = null
+
+function getCallUI() {
+    if (call_ui) return call_ui
+
+    const container = document.createElement("div")
+    container.id = "inanovai-telephony-call-ui"
+    document.body.appendChild(container)
+
+    call_ui = window.mountTelephonyCallUI(container)
+    return call_ui
+}
 
 frappe.ui.form.on("Lead", {
     refresh(frm) {
@@ -37,21 +49,14 @@ frappe.ui.form.on("Lead", {
                     },
                 })
 
-                frappe.msgprint(
-                    __("Calling {0}...", [frm.doc.mobile_no])
-                )
+                const ui = getCallUI()
 
-                call.on("disconnect", () => {
-                    frappe.show_alert({
-                        message: __("Call ended"),
-                        indicator: "green",
-                    })
-                })
+                if (ui) {
+                    ui.startCall(call, frm.doc.mobile_no)
+                }
 
                 call.on("error", (error) => {
-                    frappe.msgprint(
-                        __("Call failed: {0}", [error.message])
-                    )
+                    console.error("Twilio call error:", error)
                 })
             } catch (error) {
                 console.error(error)

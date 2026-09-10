@@ -26,11 +26,11 @@ required_apps = ["crm", "telephony"]
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/inanovai_telephony/css/inanovai_telephony.css"
+# app_include_css = "/assets/inanovai_telephony/js/inanovai_telephony.css"
 # app_include_js = "/assets/inanovai_telephony/js/inanovai_telephony.js"
 
 # include js, css files in header of web template
-# web_include_css = "/assets/inanovai_telephony/css/inanovai_telephony.css"
+# web_include_css = "/assets/inanovai_telephony/js/inanovai_telephony.css"
 # web_include_js = "/assets/inanovai_telephony/js/inanovai_telephony.js"
 
 # include custom scss in every website theme (without file extension ".scss")
@@ -255,6 +255,10 @@ required_apps = ["crm", "telephony"]
 # ignore_translatable_strings_from = []
 app_include_js = [
     "/assets/inanovai_telephony/js/twilio.min.js",
+    "/assets/inanovai_telephony/js/telephony_call_ui.js",
+]
+app_include_css = [
+    "/assets/inanovai_telephony/js/inanovai_telephony.css",
 ]
 
 doctype_js = {
