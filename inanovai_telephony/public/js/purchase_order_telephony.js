@@ -1,4 +1,16 @@
 let purchase_order_device = null
+let purchase_order_call_ui = null
+
+function getPurchaseOrderCallUI() {
+    if (purchase_order_call_ui) return purchase_order_call_ui
+
+    const container = document.createElement("div")
+    container.id = "inanovai-telephony-call-ui-purchase-order"
+    document.body.appendChild(container)
+
+    purchase_order_call_ui = window.mountTelephonyCallUI(container)
+    return purchase_order_call_ui
+}
 
 frappe.ui.form.on("Purchase Order", {
     refresh(frm) {
@@ -55,21 +67,14 @@ frappe.ui.form.on("Purchase Order", {
                     },
                 })
 
-                frappe.msgprint(
-                    __("Calling {0}...", [phone])
-                )
+                const ui = getPurchaseOrderCallUI()
 
-                call.on("disconnect", () => {
-                    frappe.show_alert({
-                        message: __("Call ended"),
-                        indicator: "green",
-                    })
-                })
+                if (ui) {
+                    ui.startCall(call, phone)
+                }
 
                 call.on("error", (error) => {
-                    frappe.msgprint(
-                        __("Call failed: {0}", [error.message])
-                    )
+                    console.error("Twilio call error:", error)
                 })
             } catch (error) {
                 console.error(error)
