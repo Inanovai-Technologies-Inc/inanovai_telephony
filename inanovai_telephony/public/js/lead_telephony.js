@@ -70,3 +70,52 @@ frappe.ui.form.on("Lead", {
         })
     },
 })
+
+let sms_ui = null
+
+function getSMSUI() {
+    if (sms_ui) return sms_ui
+
+    const container = document.createElement("div")
+    container.id = "inanovai-telephony-sms-ui"
+    document.body.appendChild(container)
+
+    sms_ui = window.mountTelephonySMSUI(container, {
+        onSend: ({ to, message }) => {
+            frappe.call({
+                method: "telephony.twilio.sms.send_sms",
+                args: {
+                    to,
+                    message,
+                },
+                freeze: true,
+                freeze_message: __("Sending SMS..."),
+                callback: (r) => {
+                    if (r && !r.exc) {
+                        sms_ui.showSuccess()
+                        setTimeout(() => {
+                            sms_ui.close()
+                        }, 1000)
+                    } else {
+                        sms_ui.setSending(false)
+                    }
+                },
+                error: () => {
+                    sms_ui.setSending(false)
+                },
+            })
+        },
+    })
+
+    return sms_ui
+}
+
+frappe.ui.form.on("Lead", {
+    refresh(frm) {
+        if (frm.is_new() || !frm.doc.mobile_no) return
+
+        frm.add_custom_button(__("Send SMS"), () => {
+            getSMSUI()?.open(frm.doc.mobile_no)
+        })
+    },
+})

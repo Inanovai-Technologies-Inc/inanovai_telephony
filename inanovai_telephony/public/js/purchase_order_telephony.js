@@ -88,3 +88,80 @@ frappe.ui.form.on("Purchase Order", {
         })
     },
 })
+
+let purchase_order_sms_ui = null
+
+function getPurchaseOrderSMSUI() {
+    if (purchase_order_sms_ui) return purchase_order_sms_ui
+
+    const container = document.createElement("div")
+    container.id = "inanovai-telephony-sms-ui-purchase-order"
+    document.body.appendChild(container)
+
+    purchase_order_sms_ui = window.mountTelephonySMSUI(container, {
+        onSend: ({ to, message }) => {
+            frappe.call({
+                method: "telephony.twilio.sms.send_sms",
+                args: {
+                    to,
+                    message,
+                },
+                freeze: true,
+                freeze_message: __("Sending SMS..."),
+                callback: (r) => {
+                    if (r && !r.exc) {
+                        purchase_order_sms_ui.showSuccess()
+                        setTimeout(() => {
+                            purchase_order_sms_ui.close()
+                        }, 1000)
+                    } else {
+                        purchase_order_sms_ui.setSending(false)
+                    }
+                },
+                error: () => {
+                    purchase_order_sms_ui.setSending(false)
+                },
+            })
+        },
+    })
+
+    return purchase_order_sms_ui
+}
+
+frappe.ui.form.on("Purchase Order", {
+    refresh(frm) {
+        if (frm.is_new() || !frm.doc.supplier) return
+
+        frm.add_custom_button(__("Send SMS"), async () => {
+            try {
+                const phone_response = await frappe.call({
+                    method: "inanovai_telephony.api.purchase_order.get_supplier_phone",
+                    args: {
+                        supplier: frm.doc.supplier,
+                    },
+                })
+
+                const phone = phone_response.message?.phone
+
+                if (!phone) {
+                    frappe.msgprint(
+                        __("No phone number is configured for supplier {0}.", [
+                            frm.doc.supplier,
+                        ])
+                    )
+                    return
+                }
+
+                getPurchaseOrderSMSUI()?.open(phone)
+            } catch (error) {
+                console.error(error)
+
+                frappe.msgprint(
+                    __("Unable to open SMS composer: {0}", [
+                        error.message || error,
+                    ])
+                )
+            }
+        })
+    },
+})

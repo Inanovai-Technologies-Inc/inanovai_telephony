@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 
 
 @frappe.whitelist()
@@ -49,3 +50,30 @@ def get_supplier_phone(supplier):
                 return {"phone": row.phone}
 
     return {"phone": None}
+
+
+def send_submission_sms(doc, method=None):
+    """Best-effort supplier notification on Purchase Order submit.
+    Any failure here is logged and swallowed — it must never block submit."""
+    try:
+        phone = get_supplier_phone(doc.supplier).get("phone")
+
+        if not phone:
+            frappe.log_error(
+                title="Purchase Order submission SMS skipped",
+                message=f"No phone number on file for supplier {doc.supplier} (Purchase Order {doc.name}).",
+            )
+            return
+
+        message = _(
+            "Purchase Order {0} has been submitted. Please review and confirm."
+        ).format(doc.name)
+
+        from telephony.twilio.sms import send_sms
+
+        send_sms(to=phone, message=message)
+    except Exception:
+        frappe.log_error(
+            title="Purchase Order submission SMS failed",
+            message=frappe.get_traceback(),
+        )

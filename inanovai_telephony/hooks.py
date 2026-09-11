@@ -152,6 +152,18 @@ required_apps = ["crm", "telephony"]
 # 	}
 # }
 
+doc_events = {
+    "Purchase Order": {
+        "on_submit": "inanovai_telephony.api.purchase_order.send_submission_sms",
+    },
+    "Purchase Receipt": {
+        "on_submit": "inanovai_telephony.api.purchase_receipt.send_receipt_sms",
+    },
+    "Delivery Note": {
+        "on_submit": "inanovai_telephony.api.delivery_note.send_delivery_sms",
+    },
+}
+
 # Scheduled Tasks
 # ---------------
 
@@ -265,4 +277,5 @@ doctype_js = {
     "Lead": "public/js/lead_telephony.js",
     "Purchase Order": "public/js/purchase_order_telephony.js",
     "Opportunity": "public/js/opportunity_telephony.js",
+    "Delivery Note": "public/js/delivery_note_telephony.js",
 }
