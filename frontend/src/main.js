@@ -1,6 +1,7 @@
 import { createApp, h } from "vue"
 import TelephonyCallUI from "./components/TelephonyCallUI.vue"
 import TelephonySMSUI from "./components/TelephonySMSUI.vue"
+import TelephonyOTPUI from "./components/TelephonyOTPUI.vue"
 
 let app = null
 let component = null
@@ -60,3 +61,32 @@ export function mountTelephonySMSUI(target, handlers = {}) {
 }
 
 window.mountTelephonySMSUI = mountTelephonySMSUI
+
+let otpApp = null
+let otpComponent = null
+
+export function mountTelephonyOTPUI(target) {
+    if (!target) return null
+
+    if (otpApp) {
+        otpApp.unmount()
+        otpApp = null
+        otpComponent = null
+    }
+
+    otpApp = createApp({
+        render() {
+            return h(TelephonyOTPUI, {
+                ref: (instance) => {
+                    otpComponent = instance
+                },
+            })
+        },
+    })
+
+    otpApp.mount(target)
+
+    return otpComponent
+}
+
+window.mountTelephonyOTPUI = mountTelephonyOTPUI

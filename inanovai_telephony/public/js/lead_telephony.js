@@ -119,3 +119,25 @@ frappe.ui.form.on("Lead", {
         })
     },
 })
+let otp_ui = null
+
+function getOTPUI() {
+    if (otp_ui) return otp_ui
+
+    const container = document.createElement("div")
+    container.id = "inanovai-telephony-otp-ui"
+    document.body.appendChild(container)
+
+    otp_ui = window.mountTelephonyOTPUI(container)
+    return otp_ui
+}
+
+frappe.ui.form.on("Lead", {
+    refresh(frm) {
+        if (frm.is_new() || !frm.doc.mobile_no) return
+
+        frm.add_custom_button(__("Send OTP"), () => {
+            getOTPUI()?.open(frm.doc.mobile_no)
+        })
+    },
+})

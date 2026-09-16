@@ -278,4 +278,5 @@ doctype_js = {
     "Purchase Order": "public/js/purchase_order_telephony.js",
     "Opportunity": "public/js/opportunity_telephony.js",
     "Delivery Note": "public/js/delivery_note_telephony.js",
+    "Customer": "public/js/customer_telephony.js",
 }
