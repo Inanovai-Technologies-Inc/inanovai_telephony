@@ -268,15 +268,31 @@ doc_events = {
 app_include_js = [
     "/assets/inanovai_telephony/js/twilio.min.js",
     "/assets/inanovai_telephony/js/telephony_call_ui.js",
+    # Loaded globally (not per-DocType via doctype_js) so telephony buttons
+    # can be enabled for any DocType purely through Telephony Settings, with
+    # no hooks.py change needed. See telephony_settings.js's header comment
+    # for how it detects the current DocType without a doctype_js entry, and
+    # why Purchase Order / Delivery Note are excluded inside that file.
+    "/assets/inanovai_telephony/js/telephony_settings.js",
 ]
 app_include_css = [
     "/assets/inanovai_telephony/js/inanovai_telephony.css",
 ]
 
 doctype_js = {
-    "Lead": "public/js/lead_telephony.js",
-    "Purchase Order": "public/js/purchase_order_telephony.js",
-    "Opportunity": "public/js/opportunity_telephony.js",
+    # Delivery Note keeps its dedicated script running ALONGSIDE the generic
+    # telephony_settings.js (loaded globally, below): its one button,
+    # "Send Delivery SMS", is uniquely labeled and does something generic
+    # doesn't (pre-filled templated message, submitted-only) — see
+    # telephony_settings.js's header comment for why this is safe (no label
+    # collision) rather than duplicating buttons.
+    #
+    # Purchase Order's dedicated script is retired (no entry here) — its
+    # "Make a Call"/"Send SMS" buttons use the exact same labels the generic
+    # script produces, so it had to stop loading entirely to avoid
+    # duplicates; the file itself is untouched on disk. Lead, Customer,
+    # Opportunity, and Sales Order also no longer need an entry here for the
+    # same reason as Purchase Order — telephony_settings.js handles all of
+    # them, driven entirely by Telephony Settings.
     "Delivery Note": "public/js/delivery_note_telephony.js",
-    "Customer": "public/js/customer_telephony.js",
 }

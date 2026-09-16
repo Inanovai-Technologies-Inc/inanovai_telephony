@@ -1,0 +1,109 @@
+{
+ "actions": [],
+ "creation": "2026-09-16 00:00:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "max_attempts",
+  "section_break_numbers",
+  "sales_number",
+  "support_number",
+  "column_break_numbers",
+  "accounts_number",
+  "fallback_number"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "IVR Enabled"
+  },
+  {
+   "default": "3",
+   "depends_on": "enabled",
+   "description": "Number of invalid or empty attempts allowed before the fallback is used.",
+   "fieldname": "max_attempts",
+   "fieldtype": "Int",
+   "label": "Maximum Invalid Attempts",
+   "non_negative": 1
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "section_break_numbers",
+   "fieldtype": "Section Break",
+   "label": "Menu Destinations"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "sales_number",
+   "fieldtype": "Data",
+   "label": "Sales Number (Press 1)",
+   "options": "Phone"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "support_number",
+   "fieldtype": "Data",
+   "label": "Support Number (Press 2)",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "column_break_numbers",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "accounts_number",
+   "fieldtype": "Data",
+   "label": "Accounts Number (Press 3)",
+   "options": "Phone"
+  },
+  {
+   "depends_on": "enabled",
+   "description": "Used when the caller exhausts all attempts, or a selected department has no number configured. Leave blank to play a goodbye message and end the call instead.",
+   "fieldname": "fallback_number",
+   "fieldtype": "Data",
+   "label": "Fallback Number",
+   "options": "Phone"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-16 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Inanovai Telephony Integration",
+ "name": "Telephony IVR Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "TP Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

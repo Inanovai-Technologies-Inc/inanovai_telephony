@@ -1,0 +1,49 @@
+{
+ "actions": [],
+ "creation": "2026-09-16 12:57:30.763034",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "telephony_actions"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "telephony_actions",
+   "fieldtype": "Table",
+   "label": "Telephony Actions",
+   "options": "Telephony Action"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-16 15:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Inanovai Telephony Integration",
+ "name": "Telephony Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
