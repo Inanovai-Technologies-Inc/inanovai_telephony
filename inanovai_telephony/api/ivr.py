@@ -7,23 +7,52 @@ from telephony.twilio.api import create_call_log
 from telephony.twilio.twilio_handler import IncomingCall, Twilio, TwilioCallDetails
 from telephony.twilio.utils import get_public_url
 
-GREETING = "Welcome to Inanovai. Press 1 for Sales. Press 2 for Support. Press 3 for Accounts."
-INVALID_INPUT = "Sorry, that is not a valid option. Please press 1 for Sales, 2 for Support, or 3 for Accounts."
-NO_INPUT = "Sorry, we did not receive your selection. Please press 1 for Sales, 2 for Support, or 3 for Accounts."
 GOODBYE = "We're unable to connect your call right now. Goodbye."
-
-# digit -> (Telephony IVR Settings fieldname, display label)
-MENU = {
-    "1": ("sales_number", "Sales"),
-    "2": ("support_number", "Support"),
-    "3": ("accounts_number", "Accounts"),
-}
 
 MENU_ACTION_PATH = "/api/method/inanovai_telephony.api.ivr.handle_menu_selection"
 
 
 def get_ivr_settings():
     return frappe.get_cached_doc("Telephony IVR Settings")
+
+
+def _menu_choices(settings):
+    """{press_key: (phone_number, department)}, built fresh from the
+    Telephony IVR Menu Destination rows on every call. Adding, renaming, or
+    removing a department in Telephony Settings takes effect immediately —
+    no code change needed."""
+    return {
+        row.press_key: (row.phone_number, row.department)
+        for row in settings.menu_destinations
+        if row.press_key
+    }
+
+
+def _describe_choices(settings):
+    """'1 for Sales, 2 for Support, 3 for Accounts' — used in both the
+    greeting and the re-prompt messages, so they always list exactly the
+    departments currently configured."""
+    return ", ".join(
+        f"{row.press_key} for {row.department}" for row in settings.menu_destinations
+    )
+
+
+def _greeting(settings):
+    choices = _describe_choices(settings)
+    if not choices:
+        return "Welcome to Inanovai."
+    return f"Welcome to Inanovai. Press {choices}."
+
+
+def _invalid_input_prompt(settings):
+    return f"Sorry, that is not a valid option. Please press {_describe_choices(settings)}."
+
+
+def _no_input_prompt(settings):
+    return (
+        f"Sorry, we did not receive your selection. "
+        f"Please press {_describe_choices(settings)}."
+    )
 
 
 def _gather_response(prompt, attempt):
@@ -73,13 +102,14 @@ def incoming_call(**kwargs):
         resp = IncomingCall(args.From, args.To).process()
         return Response(resp.to_xml(), mimetype="text/xml")
 
-    resp = _gather_response(GREETING, attempt=1)
+    resp = _gather_response(_greeting(settings), attempt=1)
     return Response(resp.to_xml(), mimetype="text/xml")
 
 
 @frappe.whitelist(allow_guest=True)
 def handle_menu_selection(**kwargs):
-    """<Gather>'s action callback. Routes on 1/2/3, re-prompts on invalid or
+    """<Gather>'s action callback. Routes on whichever digits are configured
+    in Telephony IVR Settings' Menu Destinations, re-prompts on invalid or
     empty input (up to settings.max_attempts), then falls back."""
     args = frappe._dict(kwargs)
     digit = (args.get("Digits") or "").strip()
@@ -88,10 +118,11 @@ def handle_menu_selection(**kwargs):
     from_number = args.get("From")
 
     settings = get_ivr_settings()
+    menu = _menu_choices(settings)
 
-    if digit in MENU:
-        field, label = MENU[digit]
-        destination = (settings.get(field) or "").strip()
+    if digit in menu:
+        destination, label = menu[digit]
+        destination = (destination or "").strip()
 
         if call_sid and frappe.db.exists("TP Call Log", call_sid):
             frappe.get_doc("TP Call Log", call_sid).add_comment(
@@ -112,6 +143,6 @@ def handle_menu_selection(**kwargs):
         resp = _fallback_response(settings, from_number)
         return Response(resp.to_xml(), mimetype="text/xml")
 
-    prompt = NO_INPUT if not digit else INVALID_INPUT
+    prompt = _no_input_prompt(settings) if not digit else _invalid_input_prompt(settings)
     resp = _gather_response(prompt, attempt=attempt + 1)
     return Response(resp.to_xml(), mimetype="text/xml")

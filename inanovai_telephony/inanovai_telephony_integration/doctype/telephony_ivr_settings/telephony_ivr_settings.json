@@ -8,11 +8,7 @@
  "field_order": [
   "enabled",
   "max_attempts",
-  "section_break_numbers",
-  "sales_number",
-  "support_number",
-  "column_break_numbers",
-  "accounts_number",
+  "menu_destinations",
   "fallback_number"
  ],
  "fields": [
@@ -33,34 +29,11 @@
   },
   {
    "depends_on": "enabled",
-   "fieldname": "section_break_numbers",
-   "fieldtype": "Section Break",
-   "label": "Menu Destinations"
-  },
-  {
-   "depends_on": "enabled",
-   "fieldname": "sales_number",
-   "fieldtype": "Data",
-   "label": "Sales Number (Press 1)",
-   "options": "Phone"
-  },
-  {
-   "depends_on": "enabled",
-   "fieldname": "support_number",
-   "fieldtype": "Data",
-   "label": "Support Number (Press 2)",
-   "options": "Phone"
-  },
-  {
-   "fieldname": "column_break_numbers",
-   "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "enabled",
-   "fieldname": "accounts_number",
-   "fieldtype": "Data",
-   "label": "Accounts Number (Press 3)",
-   "options": "Phone"
+   "description": "Each row is one menu option: the digit the caller presses, the department name announced in the greeting, and where the call is transferred.",
+   "fieldname": "menu_destinations",
+   "fieldtype": "Table",
+   "label": "Menu Destinations",
+   "options": "Telephony IVR Menu Destination"
   },
   {
    "depends_on": "enabled",
